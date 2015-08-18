@@ -18,9 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Revision: 2329 $ $Date:: 2015-08-14 #$ $Author: serge $
+# $Revision: 2337 $ $Date:: 2015-08-18 #$ $Author: serge $
 
-VER="1.0"
+VER="1.1"
 
 replace_word()
 {
@@ -28,7 +28,7 @@ local from=$1
 local to=$2
 local file_in=$3
 
-local mask="s/\([^\w]*\|^\)\($from\)\([^\w]*\)/\1$to\3/"
+local mask="s/\b$from\b/$to/g"
 
 local tmp=replace_${RANDOM}
 
@@ -63,7 +63,9 @@ echo -e "\n\n#endif // _${fl}_h_" >> ${msk}_01
 
 #replace private,public,protected
 #cat ${msk}_01 | sed "s/[^w]public /public:\n/" | sed "s/[^w]private /private:\n/" | sed "s/[^w]protected /protected:\n/" > ${msk}_02
-replace_word "public\|protected\|private" "\2:\n" ${msk}_01
+replace_word "public"    "public:\n" ${msk}_01
+replace_word "protected" "protected:\n" ${msk}_01
+replace_word "private"   "private:\n" ${msk}_01
 
 #replace override --> virtual
 replace_word "override" "virtual" ${msk}_01
@@ -95,10 +97,15 @@ replace_word "ArgumentOutOfRangeException" "std::out_of_range"  ${msk}_01
 # convert some container classes
 replace_word "List" "std::list"  ${msk}_01
 
+# convert some container classes
+replace_word "Dictionary" "std::map"  ${msk}_01
+
+# convert some template classes
+replace_word "Func" "std::function"  ${msk}_01
+
 # select last file
 last=$( ls ${msk}_* | tail -1 )
 
 cp $last $fl_cpp
 
 rm ${msk}*
-
