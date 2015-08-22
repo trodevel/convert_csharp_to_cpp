@@ -18,9 +18,9 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# $Revision: 2337 $ $Date:: 2015-08-18 #$ $Author: serge $
+# $Revision: 2371 $ $Date:: 2015-08-21 #$ $Author: serge $
 
-VER="1.1"
+VER="1.2"
 
 replace_word()
 {
@@ -32,7 +32,7 @@ local mask="s/\b$from\b/$to/g"
 
 local tmp=replace_${RANDOM}
 
-cat $file_in | sed $mask > $tmp
+cat $file_in | sed "$mask" > $tmp
 rm $file_in
 mv $tmp $file_in
 }
@@ -55,10 +55,13 @@ echo "input  = $cs_file"
 echo "output = $fl_cpp"
 
 
+# convert line endings
+dos2unix -q -n $cs_file ${msk}_00
+
 # add ifndef/define
 echo -e "// automatically converted from C# to C++ by convert_cs_to_cpp.sh ver. $VER\n" > ${msk}_01
 echo -e "#ifndef _${fl}_h_\n#define _${fl}_h_\n\n" >> ${msk}_01
-cat $cs_file >> ${msk}_01
+cat ${msk}_00 >> ${msk}_01
 echo -e "\n\n#endif // _${fl}_h_" >> ${msk}_01
 
 #replace private,public,protected
@@ -69,6 +72,9 @@ replace_word "private"   "private:\n" ${msk}_01
 
 #replace override --> virtual
 replace_word "override" "virtual" ${msk}_01
+
+#replace enum --> enum class
+replace_word "enum" "enum class" ${msk}_01
 
 #replace internal --> private:
 replace_word "internal\s*" "" ${msk}_01
